@@ -22,8 +22,8 @@
         "php": "^7.1"
     },
     "require-dev": {
-        "phpunit/phpunit": "^6.0.8",
-        "zendframework/zend-coding-standard": "^1.0"
+        "phpunit/phpunit": "^6.0.9",
+        "zendframework/zend-coding-standard": "~1.0.0"
     },
     "autoload": {
         "psr-4": {
@@ -36,6 +36,9 @@
         }
     },
     "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        },
         "zf": {
             "config-provider": "{namespace}\\ConfigProvider"
         }
