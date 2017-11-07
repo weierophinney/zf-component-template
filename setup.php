@@ -12,7 +12,8 @@
  * is of the form `{org}/{repo}`.
  *
  * `<repo-type>` may be one of "component", "apigility", or "expressive",
- * and defaults to "component".
+ * and defaults to "component"; this value will be used to fill `{category}`
+ * placeholders.
  */
 
 // Prepare arguments
@@ -24,26 +25,26 @@ if (3 > $argc) {
     help(1);
 }
 
-$repo = $argv[1];
-$ns   = $argv[2];
-$type = $argv[3] ?? 'component';
+$repo     = $argv[1];
+$ns       = $argv[2];
+$category = $argv[3] ?? 'component';
 
 $org  = 'zendframework';
 if (false !== strstr($repo, '/')) {
     list($org, $repo) = explode('/', $repo, 2);
 }
 
-if (! in_array($type, ['component', 'expressive', 'apigility'], true)) {
+if (! in_array($category, ['component', 'expressive', 'apigility'], true)) {
     fwrite(STDERR, sprintf("Invalid <repo-type> value%s", str_repeat(PHP_EOL, 2)));
     help(1);
 }
-$type = 'component' === $type ? 'components' : $type;
+$category = 'component' === $category ? 'components' : $category;
 
 // Remove .git directory if present
 removeGit(realpath(__DIR__));
 
 // Update all files
-updateRepo(realpath(__DIR__), $org, $repo, $ns, $type);
+updateRepo(realpath(__DIR__), $org, $repo, $ns, $category);
 
 // Finish
 finish($repo);
@@ -62,8 +63,9 @@ throughout the repository, replacing them with values based on
 <repo-name> and <namespace>. {org} defaults to "zendframework"
 unless <repo-name> is of the form {org}/{repo}.
 
-<repo-type> may be one of "component", "apigility", or "expressive",
-and defaults to "component".
+`<repo-type>` may be one of "component", "apigility", or "expressive",
+and defaults to "component"; this value will be used to fill `{category}`
+placeholders.
 
 Examples:
 
@@ -104,7 +106,7 @@ function removeDirectory(string $path)
     rmdir($path);
 }
 
-function updateRepo(string $path, string $org, string $repo, string $ns, string $type) : void
+function updateRepo(string $path, string $org, string $repo, string $ns, string $category) : void
 {
     fwrite(STDOUT, sprintf("- Copying README.md.dist over README.md%s", PHP_EOL));
     unlink($path . '/README.md');
@@ -114,11 +116,11 @@ function updateRepo(string $path, string $org, string $repo, string $ns, string 
     $rii = new RecursiveIteratorIterator($rdi);
 
     foreach ($rii as $file) {
-        updateFile($file, $org, $repo, $ns, $type);
+        updateFile($file, $org, $repo, $ns, $category);
     }
 }
 
-function updateFile(SplFileInfo $file, string $org, string $repo, string $ns, string $type) : void
+function updateFile(SplFileInfo $file, string $org, string $repo, string $ns, string $category) : void
 {
     if (! $file->isFile()) {
         return;
@@ -141,8 +143,8 @@ function updateFile(SplFileInfo $file, string $org, string $repo, string $ns, st
         ? str_replace('\\', '\\\\', $testNs)
         : $testNs;
 
-    $patterns      = ['{org}', '{repo}', '{namespace}', '{namespace-test}', '{type}', '{year}'];
-    $substitutions = [$org, $repo, $ns, $testNs, $type, date('Y')];
+    $patterns      = ['{org}', '{repo}', '{namespace}', '{namespace-test}', '{category}', '{year}'];
+    $substitutions = [$org, $repo, $ns, $testNs, $category, date('Y')];
 
     $contents = file_get_contents((string) $file);
     $modified = str_replace($patterns, $substitutions, $contents);
